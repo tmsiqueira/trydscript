@@ -1,0 +1,37 @@
+// Indicador: VWAP Midas - TT
+// v2.0: Corrigido para volume quantitativo
+// v1.0: release
+// Tonny Matos Siqueira - tmsiqueira@gmail.com
+// Telegram: @tmsiqueira
+// Will Santos - http://youtube.com/clubedoscalp
+
+// Parametros de configuracao //
+int tipo = 1; // 0 - high, 1 - low, 2 - close
+// mm/dd/aaaa hh:mm
+Date newdate = new Date("05/07/2019 11:10");
+
+// Fim Parametros de configuracao //
+def dt = dates();
+def vl = sharesVolume();
+def cl = close();
+def lw = low();
+def hg = high();
+def ln = newLineData();
+double num=0.0;
+double den=0.0;
+double valor=0.0;
+double vwap = 0.0;
+for ( def i = 0; i < dt.size(); i++ )
+{
+if (dt.get(i) >= newdate)
+{
+ if (tipo == 0) valor = hg.value(i);
+ else if (tipo == 1) valor = lw.value(i);
+ else valor = cl.value(i);
+ num = num + valor*vl.value(i);
+ den = den + vl.value(i);
+ vwap = num/den;
+ ln.add(vwap);
+}
+}
+r=ln;

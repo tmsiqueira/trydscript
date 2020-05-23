@@ -1,0 +1,33 @@
+// Autor: Will Santos
+// ClubeDoScalp - Weis Wave CDS //
+// www.clubedoscalp.com.br //
+def cds = newLineData();
+def size = size();
+def close = close();
+def vol = sharesVolume();
+def WW = new double[size];
+def dir = new double[size];
+
+for ( int i=2; i < size; i++ ) {
+ 	double cl1 = close.value(i-1);
+ 	double cl2 = close.value(i-2);
+ 	double cl0 = close.value(i);
+ 	double vol0 = vol.value(i);
+ 	double vol1 = vol.value(i-1);
+
+    if ( cl0 >= cl1 ) {
+		WW[i]=(cl1>=cl2 ? WW[i-1]+vol0 : vol0);
+		dir[i]=1;
+ 	} else {
+		WW[i]=(cl1<cl2 ? WW[i-1]+vol0 : vol0);
+		dir[i]=-1;
+ 	}
+}
+
+for (int i=0; i<size ; i++){
+	if (dir[i]==-1) cds.add(WW[i],255,0,0);
+	else cds.add(WW[i],0,252,252);
+}
+
+cds.setType(3); //Define como histograma
+r = cds;

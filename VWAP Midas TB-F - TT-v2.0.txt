@@ -1,0 +1,57 @@
+// Indicador: VWAP Midas TB-F - TT
+// v2.0: Corrigido para volume quantitativo
+// v1.0: release
+// Tonny Matos Siqueira - tmsiqueira@gmail.com
+// Telegram: @tmsiqueira
+
+// Parametros de configuracao //
+int tipo = 1; // 0 - high, 1 - low, 2 - close
+Date newdate = new Date("06/18/2019 14:50");
+//                       mm/dd/aaaa hh:mm
+double VolTotal = 175000;
+// Fim Parametros de configuracao //
+def dt = dates();
+def vl = sharesVolume();
+def cl = close();
+def lw = low();
+def hg = high();
+double valor=0.0;
+double vwap = 0.0;
+
+def ln = newLineData();
+def l1 = newLineData();
+def l2 = newLineData();
+
+double VolAcum = 0;
+double e = 0.0;
+
+for (def i = 0; (i < dt.size()) ; i++ )
+{
+ if ((dt.get(i) >= newdate) && (VolAcum < VolTotal))
+ {
+  VolAcum += vl.value(i);
+  e = VolAcum * (1 - VolAcum/VolTotal);
+  
+  double Vprox = 0;
+  double Vparcial = 0;
+  double Vdelta = 0;
+  double num = 0;
+  for (def j = i; Vprox != e; j--)
+  {
+  if (tipo == 0) valor = hg.value(j);
+  else if (tipo == 1) valor = lw.value(j);
+  else valor = cl.value(j);
+  
+  Vprox = Vparcial + vl.value(j);
+  if (Vprox >= e) Vprox = e;
+  Vdelta = Vprox - Vparcial;
+  num = num + valor*Vdelta;
+  Vparcial = Vprox; 
+  }
+  vwap = num/e;
+  ln.add(vwap);
+ }
+ else ln.add(vwap);
+}
+
+r = ln;

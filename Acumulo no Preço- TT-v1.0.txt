@@ -1,0 +1,83 @@
+// Indicador: Acumulo no Preço- TT
+// v1.0: release
+// Tonny Matos Siqueira - tmsiqueira@gmail.com
+// Telegram: @tmsiqueira
+
+// Parametros de configuracao //
+
+//Ajustar a data do inicio do acumulo
+// -----------> FORMATO: MM/DD/AAAA
+Date newdate = new Date("12/18/2019");
+
+//Marcar pontos de ajuste de escala.
+// ------> FORMATO: MM/DD/AAAA HH:MM:SS
+Date p1 = new Date("01/02/2020 09:54:00");
+Date p2 = new Date("01/02/2020 12:00:00");
+
+// Fim Parametros de configuracao //
+
+def size = size();
+def acum = new double[size];
+double ag;
+double pp1, pp2;
+double pa1, pa2;
+
+def ln1 = newLineData(); //saldo sem zerar
+def sa = SA(0,0);
+def cl = close();
+
+//Identifica o tempo grafico escolhido
+def d = dates();
+Date dt1 = new Date();
+Date dt2 = new Date();
+double d_min=100000000000000.0;
+for (int i=1;i<sa.size();i++)
+{ 
+  dt1 = d.get(i);
+  dt2 = d.get(i-1);
+  def dt= dt1.getTime()-dt2.getTime();
+  if (dt<d_min) d_min=dt;
+  if (dt1 == p1) pp1=cl.value(i);
+  if (dt1 == p2) pp2=cl.value(i);
+}
+
+//Calcula a força de agressao basedo no saldo de agressão
+for (int i=1;i<sa.size();i++)
+{ 
+  dt1 = d.get(i);
+  dt2 = d.get(i-1);
+  def dt= dt1.getTime()-dt2.getTime();
+  if(dt == d_min) //mudança de candle
+    {
+      ag  = sa.value(i)-sa.value(i-1);
+    }
+  else if ((sa.value(i)-sa.value(i-1)) != 0) //mudança de dia 
+    {
+      ag = sa.value(i);
+    }
+  else //outra opção (??)
+    {
+      ag=0;
+    }
+  if (dt1 >= newdate)
+   {
+    acum[i] = acum[i-1] + ag;
+    if (dt1 == p1) pa1=acum[i];
+    if (dt1 == p2) pa2=acum[i];
+   }
+  else acum[i]=0;
+}
+
+double scale = (pp2-pp1)/(pa2-pa1);
+double acum_aj;
+for (def i=1; i<sa.size(); i++ )
+{
+  if (d.get(i) >= newdate)
+  { 
+    acum_aj = ((acum[i]-pa1)*scale)+pp1;
+    if (acum_aj >= cl.value(i)) ln1.add(acum_aj,0,255,0);
+    else ln1.add(acum_aj,255,0,0);
+  }
+}
+
+r = ln1;

@@ -1,0 +1,142 @@
+// Indicador: ZigZag Wave - TT
+// v4.0: Corrigido para volume quantitativo
+// v3.0: Corrigido ATR. Incluido parametro Escurecer.
+// v2.0: Incluido parametro Inverter.
+// v1.0: release
+// Tonny Matos Siqueira - tmsiqueira@gmail.com
+// Telegram: @tmsiqueira
+// Will Santos - http://youtube.com/clubedoscalp
+
+// Parametros de configuracao //
+// Colocar zero para ativar o ATR
+// Ou colocar o valor de desvio
+double deviation = 0; 
+
+// Inverter barras de onda vendedora
+def Inverter = 0; // 0 - Não inverte, 1 - Inverte.
+// Escurecer as cores das barras
+def Escurecer = 0; // 0 - Claro, 1 - Escuro.
+
+// Parametros de configuracao do ATR
+def ATRsmoothing = 20;
+def ATRmultiplicador = 1.2;
+
+// Fim Parametros de configuracao //
+// -------------------------------//
+
+def cds = newLineData();
+def size = size();
+def cl = close();
+def vl = sharesVolume();
+def buf = new double[size];
+def dir = new double[size];
+def center = new double[size];
+def lasthigh = new int[size];
+def lastlow  = new int[size];
+def atr = ATR(ATRsmoothing,0);
+double dev = 0;
+dir[0]=0; //inicializa com zero.
+center[0]=cl.value(0);
+if (Inverter==0) Inverter = 1; else Inverter = -1;
+
+//inicializa
+for (int i=0; i<size ; i++) buf[i]=0;
+
+  for ( int i = ATRsmoothing; i < size; i++ )
+  {
+   if (deviation == 0) dev = atr.value(i-ATRsmoothing+1)*ATRmultiplicador; else dev = deviation;
+   dir[i]=dir[i-1];
+   center[i]=center[i-1];
+   
+   if ((cl.value(i)-center[i])>=dev) dir[i]=1;
+   else if ((cl.value(i)-center[i])<=-dev) dir[i]=-1;
+
+   lasthigh[i]=lasthigh[i-1];
+   lastlow[i]=lastlow[i-1];
+   
+   def restart;
+   switch(dir[i])
+   {
+      case 1: //subindo
+         if (cl.value(i)>center[i]) center[i]=cl.value(i);
+         switch(dir[i-1]) 
+         {
+            case 1: //estava subindo, continuacao                 
+             buf[i]=buf[i-1]+vl.value(i);
+             if(cl.value(i)>cl.value(lasthigh[i]))
+             {
+               lasthigh[i]=i;
+             }
+             break;
+            
+            case -1: //estava descendo, reversao
+             //corrige a descida anterior
+             buf[lasthigh[i]+1]=vl.value(lasthigh[i]+1);
+             dir[lasthigh[i]+1]=-1;
+             for(restart=lasthigh[i]+2;restart<=lastlow[i];restart++)
+             {
+              buf[restart]=buf[restart-1]+vl.value(restart);
+              dir[restart]=-1;
+             }
+             //corrige a subida atual	
+             buf[lastlow[i]+1]=vl.value(lastlow[i]+1);
+             dir[lastlow[i]+1]=1;             
+             for(restart=lastlow[i]+2;restart<=i;restart++)
+             {
+              buf[restart]=buf[restart-1]+vl.value(restart);
+              dir[restart]=1;
+             }
+            lasthigh[i]=i;
+            break;
+         }
+         break;
+      case -1: //descendo
+         if (cl.value(i)<center[i]) center[i]=cl.value(i);
+         switch(dir[i-1])
+         {
+            case -1: //estava descendo, continuacao
+               buf[i]=buf[i-1]+vl.value(i);
+               if(cl.value(i)<cl.value(lastlow[i]))
+               {
+                  lastlow[i]=i;
+               }
+               break;
+            case 1: //estava subindo, reversao
+             //corrige a subida anterior
+             buf[lastlow[i]+1]=vl.value(lastlow[i]+1);
+             dir[lastlow[i]+1]=1;             
+             for(restart=lastlow[i]+2;restart<=lasthigh[i];restart++)
+             {
+              buf[restart]=buf[restart-1]+vl.value(restart);
+              dir[restart]=1;
+             }
+
+             //corrige a descida atual	
+             buf[lasthigh[i]+1]=vl.value(lasthigh[i]+1);
+             dir[lasthigh[i]+1]=-1;
+             for(restart=lasthigh[i]+2;restart<=i;restart++)
+             {
+              buf[restart]=buf[restart-1]+vl.value(restart);
+              dir[restart]=-1;
+             }
+             lastlow[i]=i;
+             break;
+         }
+         break;
+   } 
+  }
+
+if (Escurecer==0)
+	for (int i=0; i<size ; i++)
+	{
+		if (dir[i]==-1) cds.add(Inverter*buf[i],255,0,0);
+		else cds.add(buf[i],0,255,0);
+	}
+else
+	for (int i=0; i<size ; i++)
+	{
+		if (dir[i]==-1) cds.add(Inverter*buf[i],100,0,0);
+		else cds.add(buf[i],0,100,0);
+	}
+cds.setType(3); //Define como histograma
+r = cds;
