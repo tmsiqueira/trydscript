@@ -3,7 +3,7 @@
 // v1.0: release
 // Tonny Matos Siqueira - tmsiqueira@gmail.com
 // Telegram: @tmsiqueira
-// Will Santos - http://youtube.com/clubedoscalp
+// Youtube: https://www.youtube.com/c/tonnytrader
 
 // Settings //
 def len = 60;

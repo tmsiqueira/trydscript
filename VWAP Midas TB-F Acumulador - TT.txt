@@ -3,6 +3,7 @@
 // v1.0: release
 // Tonny Matos Siqueira - tmsiqueira@gmail.com
 // Telegram: @tmsiqueira
+// Youtube: https://www.youtube.com/c/tonnytrader
 
 // Parametros de configuracao //
 def type = 1; // 0 - Volume acumulado 1 - % do Volume acumulado
