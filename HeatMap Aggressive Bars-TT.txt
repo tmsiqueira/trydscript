@@ -1,7 +1,9 @@
 // Indicador: HeatMap Agreessive Bar - TT
+// v2.0: Corrigido o calculo da agressão. Agora funciona em qualquer tempo gráfico.
+// v1.0: release
 // Tonny Matos Siqueira - tmsiqueira@gmail.com
 // Telegram: @tmsiqueira
-// Will Santos - http://youtube.com/clubedoscalp
+// Youtube: https://www.youtube.com/c/tonnytrader
 
 // Parametros de configuracao //
 def len = 400;
@@ -15,36 +17,7 @@ def barras = BARS();
 r = newLines();
 r.add( barras );
 
-def sa = SA(0,0);
-def ag = newLineData();
-
-//Identifica o tempo grafico escolhido
-def d = dates();
-Date dt1 = new Date();
-Date dt2 = new Date();
-double d_min=100000000000000.0;
-for (int i=1;i<sa.size();i++)
-{ 
-  dt1 = d.get(i);
-  dt2 = d.get(i-1);
-  def dt= dt1.getTime()-dt2.getTime();
-  if (dt<d_min) d_min=dt;
-}
-
-//Calcula a força de agressao basedo no saldo de agressão
-//ag.add(0);
-for (int i=1;i<sa.size();i++)
-{ 
-  dt1 = d.get(i);
-  dt2 = d.get(i-1);
-  def dt = dt1.getTime()-dt2.getTime();
-  if(dt == d_min)
-     ag.add(sa.value(i)-sa.value(i-1));
-  else if ((sa.value(i)-sa.value(i-1)) != 0) 
-     ag.add(sa.value(i));
-  else
-     ag.add(0);
-}
+def ag = SA(1,0);
 
 def mean = MA(ag,len,0);
 def std = STDDEV(ag,len);
