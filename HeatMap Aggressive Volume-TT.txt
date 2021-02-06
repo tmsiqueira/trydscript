@@ -1,4 +1,4 @@
-// Indicador: HeatMap Agreessive Bar - TT
+// Indicador: HeatMap Agreessive Volume - TT
 // v2.0: Corrigido o calculo da agressão. Agora funciona em qualquer tempo gráfico.
 // v1.0: release
 // Tonny Matos Siqueira - tmsiqueira@gmail.com
