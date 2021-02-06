@@ -1,0 +1,72 @@
+// Indicador: HeatMap Average Volume - TT
+// v2.0: Corrigido para volume quantitativo
+// v1.0: release
+// Tonny Matos Siqueira - tmsiqueira@gmail.com
+// Telegram: @tmsiqueira
+// Parametros de configuracao //
+def len = 400;
+def red = 4;
+def orange = 2.5;
+def yellow = 1;
+def white = -0.5;
+// Fim Parametros de configuracao //
+
+def v  = newLineData();
+def l1 = newLineData(); //media
+def l2 = newLineData(); //white
+def l3 = newLineData(); //yellow
+def l4 = newLineData(); //orange
+def l5 = newLineData(); //red
+
+def vol = sharesVolume();
+def mean = MA(vol,len, 0);
+def std = STDDEV(vol,len);
+ 
+for (int i=len;i<vol.size();i++) {
+   if (i>len) {
+     double res = ( (vol.value(i) - mean.value(i-len+1)) / (std.value(i-len)));
+  
+     double vatual = vol.value(i); 
+     double matual = mean.value(i-len+1);
+     double desvp  = std.value(i-len);
+    
+     double val=0.0;
+     
+     val=matual; 
+     l1.add(val);
+     l1.setColor(0,0,255);
+
+     val=matual+desvp*white;
+     l2.add(val);
+     l2.setColor(255,255,255);
+     
+     val=matual+desvp*yellow;
+     l3.add(val);
+     l3.setColor(255,244,2);
+     
+     val=matual+desvp*orange;
+     l4.add(val);
+     l4.setColor(255,128,0);
+     
+     val=matual+desvp*red;
+     l5.add(val);
+     l5.setColor(255,0,0);   
+     
+     if      (res > red)    v.setColor(255,0,0);
+	 else if (res > orange) v.setColor(255,128,0);
+	 else if (res > yellow) v.setColor(255,244,2);
+     else if (res > white)  v.setColor(255,255,255);
+     else                   v.setColor(0,252,252);
+    
+     v.add(vatual);
+     v.setType(3);
+   }
+}
+def result = newLines();
+result.add(v);
+result.add(l1);
+result.add(l2);
+result.add(l3);
+result.add(l4);
+result.add(l5);
+r = result;
