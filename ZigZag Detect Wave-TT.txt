@@ -1,4 +1,5 @@
 // Indicador: ZigZag Wave - TT
+// v7.0: Incluido linhas de media e desvio padrão.
 // v6.0: Incluido o volume do ultimo candle como em decisão e alterado a cor do maior volume do movimento.
 // v5.0: Marcação do maior volume do movimento e alterado para não repintar.
 // v4.0: Corrigido para volume quantitativo
@@ -7,11 +8,19 @@
 // v1.0: release
 // Tonny Matos Siqueira - tmsiqueira@gmail.com
 // Telegram: @tmsiqueira
+// Youtube: https://www.youtube.com/c/tonnytrader
 
 // Parametros de configuracao //
 // Colocar zero para ativar o ATR
 // Ou colocar o valor de desvio
 double deviation = 0; 
+
+// Media e desvio padrao
+def ativar_media = 1; // 0 - Não plota media, 1 - plota as linhas de media
+def media = 25;
+def desv1 = 1;
+def desv2 = 2;
+def desv3 = 3;
 
 // Inverter barras de onda vendedora
 def Inverter = 0; // 0 - Não inverte, 1 - Inverte.
@@ -26,6 +35,11 @@ def ATRmultiplicador = 1.2;
 // -------------------------------//
 
 def cds = newLineData();
+def m = newLineData();
+def l1 = newLineData();
+def l2 = newLineData();
+def l3 = newLineData();
+def bufmean = newLineData();
 def size = size();
 def cl = close();
 def vl = sharesVolume();
@@ -108,7 +122,23 @@ for (int i=1; i<size ; i++)
    dir[maiorvolidx] = dir[maiorvolidx]*2;
    maiorvol = vl.value(i);
    maiorvolidx = i;
+   bufmean.add(buf[i-1]);
  }
+}
+
+if (ativar_media == 1)
+{
+  def mean = MA(bufmean,media,0);
+  def std = STDDEV(bufmean,media);
+  def med = mean.value(mean.size()-1);
+  def desv = std.value(std.size()-1);
+  for (int i=1; i<size-1 ; i++)
+  {
+    m.add(med);
+    l1.add(med+desv1*desv);
+    l2.add(med+desv2*desv);
+    l3.add(med+desv3*desv);
+  }
 }
 
 if (Math.abs(dir[maiorvolidx]) != 2) dir[maiorvolidx]=dir[maiorvolidx]*2;
@@ -131,4 +161,18 @@ else
 	}
 
 cds.setType(3); //Define como histograma
-r = cds;
+
+def result = newLines();
+result.add(cds);
+if (ativar_media == 1)
+{
+  m.setColor(0,255,0); //verde
+  l1.setColor(255,244,2); //amarelo
+  l2.setColor(255,128,0); //laranja
+  l3.setColor(255,0,0); //vermelho
+  result.add(m);
+  result.add(l1);
+  result.add(l2);
+  result.add(l3);
+}
+r = result;0
